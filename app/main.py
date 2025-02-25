@@ -6,4 +6,4 @@ app = FastAPI()
 # Запуск Kafka consumer при старте приложения
 @app.on_event("startup")
 async def startup_event():
-    start_kafka_consumer()
+    await start_kafka_consumer()

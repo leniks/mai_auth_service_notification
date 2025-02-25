@@ -1,8 +1,10 @@
+import asyncio
+
 from confluent_kafka import Consumer, KafkaError
 import json
 from app.services.notification_service import handle_user_registered_event
 
-def start_kafka_consumer():
+async def start_kafka_consumer():
     conf = {
         'bootstrap.servers': 'host.docker.internal:9093',
         'group.id': 'notification_group',
@@ -12,7 +14,7 @@ def start_kafka_consumer():
     consumer = Consumer(conf)
     consumer.subscribe(['user_events'])
 
-    def consume_messages():
+    async def consume_messages():
         while True:
             msg = consumer.poll(timeout=1.0)
             if msg is None:
@@ -26,7 +28,6 @@ def start_kafka_consumer():
 
             event = json.loads(msg.value().decode('utf-8'))
             print(f"Received event: {event}")
-            handle_user_registered_event(event)
+            await handle_user_registered_event(event)
 
-    import threading
-    threading.Thread(target=consume_messages, daemon=True).start()
+    asyncio.create_task(consume_messages())
